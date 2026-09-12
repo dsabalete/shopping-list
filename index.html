@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ca">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consum — Llista de la compra</title>
+  <meta name="description"
+    content="Una llista de la compra que recorda. Es desa automàticament al navegador entre sessions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,500;9..144,0,700;9..144,1,600&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="awning" aria-hidden="true"></div>
+
+  <header class="site-head">
+    <div class="brand">
+      <span class="brand-badge">CS</span>
+      <div>
+        <p class="eyebrow">Est. 2026 · Passadís 04</p>
+        <h1>Consum <em>llista</em></h1>
+      </div>
+    </div>
+  <div class="head-actions">
+    <button id="exportBtn" class="btn ghost" type="button">Exporta</button>
+    <button id="printBtn" class="btn ghost" type="button">Imprimeix</button>
+  </div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel add-panel">
+      <h2>Afegeix a la cistella</h2>
+      <p class="muted">Es desa a l'instant en aquest dispositiu. Tanca la pestanya — hi serà.</p>
+
+      <form id="addForm" autocomplete="off">
+        <label class="field">
+          <span>Article</span>
+          <input id="itemName" name="name" type="text" placeholder="Pa de pagès, llet d'avena…" maxlength="80" required />
+        </label>
+        <div class="row">
+          <label class="field">
+            <span>Quantitat</span>
+            <div class="qty-ctrl">
+              <button type="button" id="qtyMinus" aria-label="Redueix la quantitat">−</button>
+              <input id="itemQty" type="number" min="1" max="99" value="1" inputmode="numeric" />
+              <button type="button" id="qtyPlus" aria-label="Augmenta la quantitat">+</button>
+            </div>
+          </label>
+          <label class="field">
+            <span>Passadís</span>
+            <select id="itemCat">
+              <option>Fruita i verdura</option>
+              <option>Forn</option>
+              <option>Làctics</option>
+              <option>Carn</option>
+              <option>Rebost</option>
+              <option>Congelats</option>
+              <option>Llar</option>
+              <option>Altres</option>
+            </select>
+          </label>
+        </div>
+        <button class="btn primary" type="submit">Afegeix l'article ↵</button>
+        <p class="persist-note"><span class="dot"></span><span id="saveStatus">Tots els canvis desats localment</span></p>
+      </form>
+
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="progressLabel">0 de 0 al cistell</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress">
+          <div id="progressBar"></div>
+        </div>
+      </div>
+
+      <div class="danger-zone">
+        <button id="clearDone" class="btn subtle" type="button">Esborra els marcats</button>
+        <button id="clearAll" class="btn subtle danger" type="button">Buida la llista</button>
+      </div>
+    </aside>
+
+    <section class="panel receipt-panel">
+      <div class="receipt-top">
+        <div class="toolbar">
+          <div class="search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+              <path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <input id="search" type="search" placeholder="Cerca farigola, tofu…" aria-label="Cerca articles" />
+          </div>
+          <div class="tabs" role="tablist" aria-label="Filtre">
+            <button class="tab is-active" data-filter="all" type="button">Tot</button>
+            <button class="tab" data-filter="todo" type="button">Per comprar</button>
+            <button class="tab" data-filter="done" type="button">Al cistell</button>
+          </div>
+        </div>
+        <div class="cats" id="catChips"></div>
+      </div>
+
+      <div class="receipt">
+        <div class="receipt-head mono">
+          <span>CONSUM · NÚM. 0412</span>
+          <span id="receiptDate"></span>
+        </div>
+        <ul id="list" class="items"></ul>
+        <div id="empty" class="empty" hidden>
+          <p class="empty-title">Una cistella bellament buida.</p>
+          <p class="empty-sub">Afegeix el primer article a l'esquerra — es desa automàticament entre visites.</p>
+        </div>
+        <div id="noResults" class="empty" hidden>
+          <p class="empty-title">Cap resultat per a aquesta cerca.</p>
+          <p class="empty-sub">Prova un altre terme o un altre filtre de passadís.</p>
+        </div>
+        <div class="receipt-foot mono">
+          <span id="footCount">0 articles</span>
+          <span>*** gràcies ***</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot mono">
+    <span>Llista compartida amb Supabase · localStorage com a còpia fora de línia</span>
+    <span><span id="storageNote"></span> · <button id="authLink" class="link-btn" type="button">Inicia sessió</button></span>
+  </footer>
+
+  <dialog id="authDialog" class="auth-dialog">
+    <form method="dialog" class="auth-card">
+      <div id="authOut">
+          <h2>Llista compartida</h2>
+          <p class="muted">Inicia sessió amb el correu — la llista és comuna per a tots els usuaris registrats.</p>
+        <div class="auth-row">
+          <input id="authEmail" type="email" placeholder="tu@exemple.cat" required aria-label="Adreça de correu" />
+          <button id="authSend" class="btn primary" type="button">Envia l'enllaç d'accés</button>
+        </div>
+        <p class="mono auth-note" id="authNote">Sense sessió — només es desa en aquest dispositiu.</p>
+      </div>
+      <div id="authIn" hidden>
+        <h2>El meu compte</h2>
+        <p class="auth-user">Has iniciat sessió com a <b id="authUserEmail"></b></p>
+        <p class="mono auth-note"><span id="syncStatus">Sincronitzat ✓</span> · <button id="signOut" class="link-btn"
+            type="button">Tanca la sessió</button></p>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn" type="submit">Tanca</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
