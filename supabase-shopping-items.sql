@@ -75,7 +75,17 @@ create policy "shopping_items_shared_delete"
   to authenticated
   using (true);
 
--- Realtime per a la sincronització en directe entre tots els dispositius i usuaris
--- (no fa mal si ja s'hi ha afegit). Si la publicació ja inclou la taula,
--- donarà un error sense conseqüències; ignora'l.
-alter publication supabase_realtime add table public.shopping_items;
+-- Realtime per a la sincronització en directe entre tots els dispositius i usuaris.
+-- El bloc DO fa que no falli si la taula ja hi és (evita l'error 42710).
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime'
+      AND schemaname = 'public'
+      AND tablename = 'shopping_items'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.shopping_items;
+  END IF;
+END
+$$;
